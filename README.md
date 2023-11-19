@@ -8,6 +8,12 @@
 
 Berikut adalah demo laporan untuk praktikum modul 3
 
+Topologi yang digunakan untuk praktikum modul 3 adalah sebagai berikut.
+| <p align="center"> domain.sh pada Yudhistira </p> |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/topologi.jpg" width = "400"/> |
+
+
 ## Nomor 1
 Yudhistira akan digunakan sebagai DNS Master, Werkudara sebagai DNS Slave, Arjuna merupakan Load Balancer yang terdiri dari beberapa Web Server yaitu Prabakusuma, Abimanyu, dan Wisanggeni. Buatlah topologi sesuai dengan yang telah ditentukan (Topologi No.2 dalam drive soal). 
 
