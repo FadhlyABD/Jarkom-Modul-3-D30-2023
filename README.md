@@ -8,8 +8,9 @@
 
 Berikut adalah demo laporan untuk praktikum modul 3
 
+## Topologi
 Topologi yang digunakan untuk praktikum modul 3 adalah sebagai berikut.
-| <p align="center"> domain.sh pada Yudhistira </p> |
+| <p align="center"> Topologi </p> |
 | -------------------------------------------- |
 | <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/topologi.jpg" width = "400"/> |
 
