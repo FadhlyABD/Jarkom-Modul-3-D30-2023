@@ -171,242 +171,319 @@ Setelah mengalahkan Demon King, perjalanan berlanjut. Kali ini, kalian diminta u
 - Arahkan domain untuk worker Laravel pada node worker dengan IP `192.206.3.1` dan worker PHP menuju `192.206.4.1`
 - Register domain ini diletakkan pada Heiter sebagai DNS Server dengan membuat script sebagai berikut
 
-## Nomor 2
-Buatlah website utama pada node arjuna dengan akses ke arjuna.yyy.com dengan alias www.arjuna.yyy.com dengan yyy merupakan kode kelompok.
+## Nomor 2 & 3 & 4 & 5 
+
+2.  Client yang melalui Switch3 mendapatkan range IP dari [prefix IP].3.16 - [prefix IP].3.32 dan [prefix IP].3.64 - [prefix IP].3.80 (2)
+3.  Client yang melalui Switch4 mendapatkan range IP dari [prefix IP].4.12 - [prefix IP].4.20 dan [prefix IP].4.160 - [prefix IP].4.168 (3)
+4.  Client mendapatkan DNS dari Heiter dan dapat terhubung dengan internet melalui DNS tersebut (4)
+5.  Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch3 selama 3 menit sedangkan pada client yang melalui Switch4 selama 12 menit. Dengan waktu maksimal dialokasikan untuk peminjaman alamat IP selama 96 menit 
 
 **Penyelesaian**
-- Untuk menerapkan tuntunan di modul dalam membuat domain, namun juga agar tidak perlu mengulang-ulang set up, maka kita perlu membuat script.
-- Dalam menyimpan script, disini dibagi dalam dua tempat, yaitu pada `/root/.bashrc` dan script buatan `domain.sh`.
-- `/root/.bashrc` digunakan untuk menyimpan script yang memang harus dijalankan saat booting (saat node di start) seperti script instalasi.
-- Sedangkan `domain.sh` digunakan untuk script yang sifatnya opsional seperti membuat akses domain dan seterusnya.
-- Untuk membuat domain `arjuna.d30.com`, buka web console pada node `YudhistiraDNSMaster` dan buat file `domain.sh` pada home (`~`).
-- Isikan script senagaimana berikut.
 
-| <p align="center"> domain.sh pada Yudhistira </p> |
+- Pertama-tama lakukan update package lists di Westalis dengan perintah sebagai berikut:
+  ```
+  apt-get update
+  ```
+- lalu kita install isc-dhcp-server dengan cara berikut 
+```
+apt-get install isc-dhcp-server
+```
+- setelah itu cek versi isc-dhcp-server telah ter-install dengan perintah
+```
+dhcpd --version
+```
+- Untuk membuat Client yang melalui Switch3 mendapatkan range IP dari `192.206.3.16` - `192.206.3.32` dan `192.206.3.64` - `192.206.3.80` yaitu dengan mengedit konfigurasi `isc-dhcp-server` pada `/etc/default/isc-dhcp-server` yang awal nya cuma `INTERFACES=""` menjadi `INTERFACESv4="eth1"`
+- lalu edit juga  file konfigurasi `isc-dhcp-server` pada `/etc/dhcp/dhcpd.conf` dengan 
+```
+subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.16 192.206.3.32;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+}
+
+subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.64 192.206.3.80;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+}
+
+```
+- untuk membuat Client yang melalui Switch4 mendapatkan range IP dari `192.206.4.12` - `192.206.4.20` dan `192.206.4.160` - `192.206.4.168`, yaitu  dengan mengedit konfigurasi `isc-dhcp-server` pada `/etc/dhcp/dhcpd.conf` dengan
+```
+subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.12 192.206.4.20;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+}
+
+subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.160 192.206.4.168;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+}
+
+```
+- Lalu untuk membuat Client mendapatkan DNS dari Heiter dan dapat terhubung dengan internet melalui DNS yaitu dengan mengedit konfigurasi `isc-dhcp-server` pada `/etc/dhcp/dhcpd.conf` dengan
+  ```
+  subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.16 192.206.3.32;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+    option domain-name-servers 192.206.1.2;
+  }
+  subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.64 192.206.3.80;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+    option domain-name-servers 192.206.1.2;
+  }
+  subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.12 192.206.4.20;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+	option domain-name-server 192.206.1.2;
+  }
+  subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.160 192.206.4.168;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+	option domain-name-server 192.206.1.2;
+  }
+  ```
+- Untuk membuat Lama waktu DHCP server meminjamkan alamat IP kepada Client yang melalui Switch3 selama 3 menit sedangkan pada client yang melalui Switch4 selama 12 menit. Dengan waktu maksimal dialokasikan untuk peminjaman alamat IP selama 96 menit adalah mengedit konfigurasi `isc-dhcp-server` pada `/etc/dhcp/dhcpd.conf` dengan
+```
+subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.16 192.206.3.32;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+    option domain-name-servers 192.206.1.2;
+    default-lease-time 180;
+    max-lease-time 5760;
+}
+subnet 192.206.3.0 netmask 255.255.255.0 {
+    range 192.206.3.64 192.206.3.80;
+    option routers 192.206.3.0;
+    option broadcast-address 192.206.3.255;
+    option domain-name-servers 192.206.1.2;
+    default-lease-time 180;
+    max-lease-time 5760;
+}
+subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.12 192.206.4.20;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+	option domain-name-server 192.206.1.2;
+ 	default-lease-time 720;
+	max-lease-time 5760;
+}
+subnet 192.206.4.0 netmask 255.255.255.0{
+	range 192.206.4.160 192.206.4.168;
+	option routers 192.206.4.0;
+	option broadcast-address 192.206.4.255;
+	option domain-name-server 192.206.1.2;
+ 	default-lease-time 720;
+	max-lease-time 5760;
+}
+```
+- setelah itu restart isc-dhcp-server Dengan Perintah
+  ```
+  service isc-dhcp-server restart
+  ```
+
+| |
 | -------------------------------------------- |
 | <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-2a.png" width = "400"/> |
 
-| <p align="center"> domain.sh pada Yudhistira </p> |
+|  |
 | -------------------------------------------- |
 | <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-2b.png" width = "400"/> |
 
-- Restart bind9 untuk DNS Server akan dilakukan di akhir.
-
-## Nomor 3 & 4
-Dengan cara yang sama seperti soal nomor 2, buatlah website utama dengan akses ke abimanyu.yyy.com dan alias www.abimanyu.yyy.com.
-Kemudian, karena terdapat beberapa web yang harus di-deploy, buatlah subdomain parikesit.abimanyu.yyy.com yang diatur DNS-nya di Yudhistira dan mengarah ke Abimanyu.
-
-**Penyelesaian**
-- Melanjutkan file script `domain.sh` pada node Yudhistira dengan menambahkan script sebagaimana berikut.
-
-| <p align="center"> domain.sh pada Yudhistira </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-3a.png" width = "400"/> |
-
-| <p align="center"> domain.sh pada Yudhistira </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-3b.png" width = "400"/> |
-
-## Nomor 5
-
-Buat juga reverse domain untuk domain utama. (Abimanyu saja yang direverse)
-
-**Penyelesaian**
-- Untuk mmembuat reserve domain untuk domain utama  pertama tama kita buat konfigurasinya di dalam `domain.sh`  di dalam `yudistira`
-    
-| <p align="center"> </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/yudistira01.png" width = "400"/> |
-
-- script tersebut adalah untuk membuat konfigurasi reserve DNS domain abimanyu.d30.com
-- Setelah itu copy `/etc/bind/db.local` ke `/etc/bind/abimanyu/3.206.192.in-addr.arpa`
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/yudistira02.png" width = "400"/> |
-
-- Setelah itu Tambahkan script berikut di `domain.sh`  di dalam `yudistira`
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/yudistira03.png" width = "400"/> |
-
-- Script `$TTL 604800:` Ini mengatur Time To Live (TTL) untuk zona DNS ini, yang menentukan berapa lama data DNS dapat disimpan dalam cache sebelum dianggap tidak valid.
-
-`@ IN SOA abimanyu.d30.com. root.abimanyu.d30.com. ( ... ):` Ini adalah catatan SOA (Start of Authority), yang menentukan informasi tentang zona seperti nama server otoritas (abimanyu.d30.com.), alamat email administrator (root.abimanyu.d30.com.), dan parameter lainnya seperti serial number, refresh interval, retry interval, dan expire interval.
-
-`3.206.192.in-addr.arpa. IN NS abimanyu.d30.com.:` Ini adalah catatan NS yang menunjukkan bahwa server otoritas untuk zona reverse lookup ini adalah "abimanyu.d30.com."
-
-`4 IN PTR abimanyu.d30.com.:` Ini adalah catatan PTR (Pointer) yang menentukan bahwa alamat IP "192.206.3.4" akan dihubungkan ke nama domain "abimanyu.d30.com." Dalam kata lain, ini adalah konfigurasi reverse DNS lookup yang menghubungkan alamat IP ke nama domain.
-Setelah itu script tersebut di masukkan ke dalam `/etc/bind/abimanyu/3.206.192.in-addr.arpa`
 
 ## Nomor 6
 
-Agar dapat tetap dihubungi ketika DNS Server Yudhistira bermasalah, buat juga Werkudara sebagai DNS Slave untuk domain utama.
+Pada masing-masing worker PHP, lakukan konfigurasi virtual host untuk website berikut dengan menggunakan php 7.3.
 
 **Penyelesaian**
-- Untuk membuat DNS Slave di werkudara pertama-tama kita tambahkan script berikut di dalam `bashrc` di dalam root werkudara :
-  
-| <p align="center"> </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara01.png" width = "400"/> |
 
-| <p align="center"> </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara02.png" width = "400"/> |
-
-- Script tersebut berguna untuk melakukan update dan menginstall Bind9
-- Langkah selanjutnya adalah membuat `domain.sh` di root atau home,lalu tambahkan script berikut di dalamnya :
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara03.png" width = "400"/> |
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara04.png" width = "400"/> |
-  
-- Script tersebut berguna untuk membuat konfigurasi DNS yang ada di werkudara menjadi DNS slave,  menambahkan konfigurasi zona DNS `arjuna.d30.com` dan `abimanyu.d30.com` sebagai zona slave dengan server master yang memiliki alamat IP "192.206.2.2" ke berkas konfigurasi DNS /etc/bind/named.conf.local. Dengan demikian, server DNS akan mulai mengambil data dari server master tersebut untuk zona `arjuna.d30.com` dan `abimanyu.d30.com`.Lalu script tersebut di masukkan di dalam `/etc/bind/named.conf.local`
-- Langkah selanjutnya adalah Menambahkan script berikut pada `domain.sh` di zona `arjuna.d30.com` dan `abimanyu.d30.com`. di dalam `Yudistira`  
-  ``also-notify { 192.206.3.2; }; // Masukan IP Werkudara tanpa tanda petik
-    allow-transfer { 192.206.3.2; }; // Masukan IP Werkudara tanpa tanda petik``
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara05.png" width = "400"/> |
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara06.png" width = "400"/> |
-  
-- script tersebut berfungsi untuk Menunjukkan bahwa server BIND juga akan memberitahu (notify) server DNS lain dengan alamat IP "192.206.3.2" ketika ada perubahan dalam zona `arjuna.d30.com` dan `abimanyu.d30.com`. Ini berguna untuk menjaga konsistensi data. script juga tersebut berfungsi untuk Menunjukkan bahwa server dengan alamat IP "192.206.3.2" diperbolehkan untuk mengambil data dari zona `arjuna.d30.com` dan `abimanyu.d30.com`. Ini mengatur izin untuk transfer zona.
+- Pertama-tama lakukan update dengan dengan perintah sebagai berikut:
+  ```
+  apt-get update
+  ```
+- Lalu install lynx dengan perintah
+  ```
+  apt-get install lynx
+  ```
+- Lalu install apache2 dengan perintah
+ ```
+apt-get install apache2
+ ```
+- Lalu install PHP dengan perintah
+```
+apt-get install php
+```
+- Setelah itu copy `file 000-default.conf` menjadi `file 000-default-8080.conf dengan perintah`
+  ```
+  cp 000-default.conf default-8080.conf
+  ```
+- Lalu ubah port pada `/etc/apache2/sites-available/default-8080.conf` yang awalnya `80` menjadi `8080` dan Ubah juga `DocumentRoot` yang awalnya `/var/www/html` menjadi `/var/www/web-8080`
+  (ss)
+- lalu Tambahkan `Listen 8080` pada `file /etc/apache2/ports.conf`
+  (ss)
+- lalu buat direktori di `/var/www` dengan nama `web-8080` dan buat file dengan nama `index.php `
+  (ss)
+- Lalu aktifkan konfigurasi default-8080.conf dengan perintah
+  ```
+  a2ensite default-8080.conf
+  ```
+- lalu restart apache dengan perintah
+  ```
+  service apache2 restart
+  ```
+- lalu buka web yang telah di buat di lynx dengan perintah
+  ```
+  lynx http://192.206.3.1:8080
+  ```
+  (ss)
+- lakukan langkah langkah di atas di setiap worker di switch 3
   
 ## Nomor 7
-Seperti yang kita tahu karena banyak sekali informasi yang harus diterima, buatlah subdomain khusus untuk perang yaitu baratayuda.abimanyu.yyy.com dengan alias www.baratayuda.abimanyu.yyy.com yang didelegasikan dari Yudhistira ke Werkudara dengan IP menuju ke Abimanyu dalam folder Baratayuda.
+Kepala suku dari Bredt Region memberikan resource server sebagai berikut:
+a. Lawine, 4GB, 2vCPU, dan 80 GB SSD.
+b. Linie, 2GB, 2vCPU, dan 50 GB SSD.
+c. Lugner 1GB, 1vCPU, dan 25 GB SSD.
+aturlah agar Eisen dapat bekerja dengan maksimal, lalu lakukan testing dengan 1000 request dan 100 request/second.
+
 
 **Penyelesaian**
-langkah untuk membuat subdomain baratayuda.abimanyu.d30.com dengan alias www.baratayuda.abimanyu.d30.com yang didelegasikan dari Yudhistira ke Werkudara dengan IP menuju ke Abimanyu dalam folder Baratayuda. adalah sebagai berikut : 
-- Pertama tama kita tambahkan dulu script berikut di dalam `domain.sh` di dalam `werkudara`
-  
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara07.png" width = "400"/> |
 
-- Script tersebut berfungsi untuk membuat konfigurasi domain server `baratayuda.abimanyu.d30.com`
-- Lalu tambahkan script berikut di dalam `domain.sh` di dalam `werkudara`
-  
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara08.png" width = "400"/> |
+- Pertama-tama lakukan update dengan dengan perintah sebagai berikut:
+  ```
+  apt-get update
+  ```
+- Lalu install nginx di semua worker di switch 3 dengan perintah
+  ```
+  apt-get install nginx
+  ```
 
-- Script `allow-query { any; };:` Mengatur bahwa server DNS akan mengizinkan permintaan DNS dari semua sumber (any).Berarti siapa pun dapat mengirim permintaan DNS ke server.
-`auth-nxdomain no;:`  Mengatur perilaku server DNS ketika menemui kasus domain yang tidak ditemukan (NXDOMAIN). Dalam hal ini, opsi diatur ke "no", yang berarti server tidak akan mengirimkan jawaban yang tepat mengikuti RFC1035. Ini bisa bermanfaat dalam beberapa situasi tertentu, tetapi perlu diterapkan dengan hati-hati.
-`listen-on-v6 { any; };:` Mengatur server DNS agar mendengarkan permintaan DNS di alamat IPv6. Dalam hal ini, digunakan "any" untuk mendengarkan di semua alamat IPv6 yang tersedia.
-Dan memasukkan script tersebut di `/etc/bind/named.conf.options`
-- Lalu buat direktori baru dengan nama `delegasi` di dalam `/etc/bind`
- 
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara09.png" width = "400"/> |
+-  Kemudian di Eisen install nginx dengan perintah
+  ```
+apt-get install nginx
+```
+- Modifikasi konfigurasi nginx di Eisen dengan membuat file baru di `/etc/nginx/sites-available` dengan nama `jarkom` dengan isi 
+```
+server {
 
-- Lalu copy `/etc/bind/db.local` ke `/etc/bind/delegasi/baratayuda.abimanyu.d30.com` 
-   
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara10.png" width = "400"/> |
+listen 80;
 
-- Lalu tambah kan script berikut di `domain.sh` di dalam `Yudistira` : 
-     
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara11.png" width = "400"/> |
+root /var/www/jarkom;
 
-- Script `Ns1 IN A 192.206.3.2:` adalah catatan A yang menetapkan alamat IP untuk domain "Ns1.abimanyu.d30.com" ke "192.206.3.2".
-`baratayuda IN NS Ns1:` adalah catatan NS yang menunjukkan bahwa "baratayuda.abimanyu.d30.com" adalah zona yang diotorisasi oleh server "Ns1.abimanyu.d30.com".
-- Lalu tambahkan script berikut di `domain.sh` di dalam `Werkudara` :
-     
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara12.png" width = "400"/> |
+index index.php index.html index.htm;
+server_name _;
 
-- Script `@ IN SOA baratayuda.abimanyu.d30.com. root.baratayuda.abimanyu.d30.com. ( ... ): `Ini adalah catatan SOA (Start of Authority), yang menentukan informasi tentang zona seperti nama server otoritas (baratayuda.abimanyu.d30.com.), alamat email administrator (root.baratayuda.abimanyu.d30.com.), dan parameter lainnya seperti serial number, refresh interval, retry interval, dan expire interval.
-`@ IN NS baratayuda.abimanyu.d30.com.: `Ini menunjukkan bahwa server otoritas untuk zona ini adalah "baratayuda.abimanyu.d30.com."
-`@ IN A 192.206.3.2:` Ini adalah catatan A yang menetapkan alamat IP untuk domain "baratayuda.abimanyu.d30.com" ke "192.206.3.2".
-`www IN CNAME baratayuda.abimanyu.d30.com.:` Ini adalah catatan CNAME yang menunjukkan bahwa alamat "www.baratayuda.abimanyu.d30.com" akan diarahkan (alias) ke "baratayuda.abimanyu.d30.com."
-`rjp IN A 192.206.3.4:` Ini adalah catatan A yang menetapkan alamat IP untuk domain "rjp.baratayuda.abimanyu.d30.com" ke "192.206.3.4".
-lalu memasukkan nya ke `/etc/bind/delegasi/baratayuda.abimanyu.d30.com`
+location / {
+        try_files $uri $uri/ /index.php?$query_string;
+}
+
+# pass PHP scripts to FastCGI server
+location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
+}
+
+location ~ /\.ht {
+        deny all;
+}
+
+error_log /var/log/nginx/jarkom_error.log;
+access_log /var/log/nginx/jarkom_access.log;
+}
+```
+- lalu buat direktori baru di `/var/www`  dengan nama ` jarkom` dan buat file `index.php` di dalam nya
+
+- Kemudian buat file baru di `/etc/nginx/sites-available` dengan nama `lb-jarkom  ` untuk melakukan penetapan pembobotan ke masing masing worker dengan
+  ```
+  #Default menggunakan Round Robin
+  upstream backend  {
+  server 192.206.3.3 weight=4; #IP Lawnie
+  server 192.206.3.2 weight=2; #IP Linie
+  server 192.206.3.1 weight=1; #IP Lugner
+  }
+  server {
+  listen 80;
+  server_name jarkom.site;
+
+        location / {
+                proxy_pass http://backend;
+                proxy_set_header    X-Real-IP $remote_addr;
+                proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header    Host $http_host;
+        }
+  error_log /var/log/nginx/lb_error.log;
+  access_log /var/log/nginx/lb_access.log;
+  }
+
+  ```
+- kemudian Unlink default config di `/etc/nginx/sites-enabled` dan symlink file `lb-jarkom` ke `/etc/nginx/sites-enabled` dengan perintah
+```
+unlink /etc/nginx/sites-enabled/default
+```
+- Lalu restart nginx dengan perintah
+```
+service nginx restart
+```
+
 
 ## Nomor 8
-Untuk informasi yang lebih spesifik mengenai Ranjapan Baratayuda, buatlah subdomain melalui Werkudara dengan akses rjp.baratayuda.abimanyu.yyy.com dengan alias www.rjp.baratayuda.abimanyu.yyy.com yang mengarah ke Abimanyu.
-
-**Penyelesaian** 
-- Untuk membuat  subdomain melalui Werkudara dengan akses rjp.baratayuda.abimanyu.yyy.com dengan alias www.rjp.baratayuda.abimanyu.yyy.com yang mengarah ke Abimanyu. Pertama tama tambahkan script berikut di dalam `/etc/bind/delegasi/baratayuda.abimanyu.d30.com` di atas script `www     IN      CNAME   baratayuda.abimanyu.d30.com.`
-     
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/werkudara13.png" width = "400"/> |
-
-- Script `rjp IN A 192.206.3.4:` Ini adalah catatan A yang menetapkan alamat IP untuk domain "rjp.baratayuda.abimanyu.d30.com" ke "192.206.3.4".
+Karena diminta untuk menuliskan grimoire, buatlah analisis hasil testing dengan 200 request dan 10 request/second masing-masing algoritma Load Balancer dengan ketentuan sebagai berikut:
+a. Nama Algoritma Load Balancer
+b. Report hasil testing pada Apache Benchmark
+c. Grafik request per second untuk masing masing algoritma. 
+d. Analisis (8)
 ## Nomor 9
 
-Arjuna merupakan suatu Load Balancer Nginx dengan tiga worker (yang juga menggunakan nginx sebagai webserver) yaitu Prabakusuma, Abimanyu, dan Wisanggeni. Lakukan deployment pada masing-masing worker.
+Dengan menggunakan algoritma Round Robin, lakukan testing dengan menggunakan 3 worker, 2 worker, dan 1 worker sebanyak 100 request dengan 10 request/second, kemudian tambahkan grafiknya pada grimoire. 
 
 ## Nomor 10
 
-Kemudian gunakan algoritma Round Robin untuk Load Balancer pada Arjuna. Gunakan server_name pada soal nomor 1. Untuk melakukan pengecekan akses alamat web tersebut kemudian pastikan worker yang digunakan untuk menangani permintaan akan berganti ganti secara acak. Untuk webserver di masing-masing worker wajib berjalan di port 8001-8003. Contoh
-    - Prabakusuma:8001
-    - Abimanyu:8002
-    - Wisanggeni:8003
+Selanjutnya coba tambahkan konfigurasi autentikasi di LB dengan dengan kombinasi username: “netics” dan password: “ajkyyy”, dengan yyy merupakan kode kelompok. Terakhir simpan file “htpasswd” nya di /etc/nginx/rahasisakita/
 
 ## Nomor 11
 
-Selain menggunakan Nginx, lakukan konfigurasi Apache Web Server pada worker Abimanyu dengan web server www.abimanyu.yyy.com. Pertama dibutuhkan web server dengan DocumentRoot pada /var/www/abimanyu.yyy
+Lalu buat untuk setiap request yang mengandung /its akan di proxy passing menuju halaman https://www.its.ac.id.
 
 ## Nomor 12
 
-Setelah itu ubahlah agar url www.abimanyu.yyy.com/index.php/home menjadi www.abimanyu.yyy.com/home.
-
+Selanjutnya LB ini hanya boleh diakses oleh client dengan IP [Prefix IP].3.69, [Prefix IP].3.70, [Prefix IP].4.167, dan [Prefix IP].4.168.
 ## Nomor 13
 
-Selain itu, pada subdomain www.parikesit.abimanyu.yyy.com, DocumentRoot disimpan pada /var/www/parikesit.abimanyu.yyy
-
+Semua data yang diperlukan, diatur pada Denken dan harus dapat diakses oleh Frieren, Flamme, dan Fern.
 ## Nomor 14
 
-Pada subdomain tersebut folder /public hanya dapat melakukan directory listing sedangkan pada folder /secret tidak dapat diakses (403 Forbidden).
+Frieren, Flamme, dan Fern memiliki Riegel Channel sesuai dengan quest guide berikut. Jangan lupa melakukan instalasi PHP8.0 dan Composer
 
-## Nomor 15
+## Nomor 15 & 16 & 17 
 
-Buatlah kustomisasi halaman error pada folder /error untuk mengganti error kode pada Apache. Error kode yang perlu diganti adalah 404 Not Found dan 403 Forbidden.
+Riegel Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada grimoire.
+a. POST /auth/register (15)
+b. POST /auth/login (16)
+c. GET /me (17)
 
-## Nomor 16
-
-Buatlah suatu konfigurasi virtual host agar file asset www.parikesit.abimanyu.yyy.com/public/js menjadi 
-www.parikesit.abimanyu.yyy.com/js 
-
-## Nomor 17
-
-Agar aman, buatlah konfigurasi agar www.rjp.baratayuda.abimanyu.yyy.com hanya dapat diakses melalui port 14000 dan 14400.
 
 ## Nomor 18
 
-Untuk mengaksesnya buatlah autentikasi username berupa “Wayang” dan password “baratayudayyy” dengan yyy merupakan kode kelompok. Letakkan DocumentRoot pada /var/www/rjp.baratayuda.abimanyu.yyy.
+Untuk memastikan ketiganya bekerja sama secara adil untuk mengatur Riegel Channel maka implementasikan Proxy Bind pada Eisen untuk mengaitkan IP dari Frieren, Flamme, dan Fern
 
 ## Nomor 19
 
-Buatlah agar setiap kali mengakses IP dari Abimanyu akan secara otomatis dialihkan ke www.abimanyu.yyy.com (alias)
+Untuk meningkatkan performa dari Worker, coba implementasikan PHP-FPM pada Frieren, Flamme, dan Fern. Untuk testing kinerja naikkan 
+- pm.max_children
+- pm.start_servers
+- pm.min_spare_servers
+- pm.max_spare_servers
+sebanyak tiga percobaan dan lakukan testing sebanyak 100 request dengan 10 request/second kemudian berikan hasil analisisnya pada Grimoire.
+
 
 ## Nomor 20
 
-Karena website www.parikesit.abimanyu.yyy.com semakin banyak pengunjung dan banyak gambar gambar random, maka ubahlah request gambar yang memiliki substring “abimanyu” akan diarahkan menuju abimanyu.png.
+Nampaknya hanya menggunakan PHP-FPM tidak cukup untuk meningkatkan performa dari worker maka implementasikan Least-Conn pada Eisen. Untuk testing kinerja dari worker tersebut dilakukan sebanyak 100 request dengan 10 request/second.
 
-| <p align="center"> FTP Request untuk mengunggah </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-1-D30-2023/blob/main/Images/soal1a.jpg" width = "400"/> |
-
-
-| <p align="center">  </p> |
-| -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-1-D30-2023/blob/main/Images/no 10 (4).png" width = "400"/> |\
-
-**Kendala** 
-masih harus nyari TCP stream satu persatu 
