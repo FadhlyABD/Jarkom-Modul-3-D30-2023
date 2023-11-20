@@ -15,102 +15,161 @@ Topologi yang digunakan untuk praktikum modul 3 adalah sebagai berikut.
 | <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/topologi.jpg" width = "400"/> |
 
 
-## Nomor 1
-Yudhistira akan digunakan sebagai DNS Master, Werkudara sebagai DNS Slave, Arjuna merupakan Load Balancer yang terdiri dari beberapa Web Server yaitu Prabakusuma, Abimanyu, dan Wisanggeni. Buatlah topologi sesuai dengan yang telah ditentukan (Topologi No.2 dalam drive soal). 
+## Nomor 0 & 1
+Setelah mengalahkan Demon King, perjalanan berlanjut. Kali ini, kalian diminta untuk melakukan register domain berupa riegel.canyon.yyy.com untuk worker Laravel dan granz.channel.yyy.com untuk worker PHP (0) mengarah pada worker yang memiliki IP [prefix IP].x.1. Lakukan konfigurasi sesuai dengan peta yang sudah diberikan.
 
 **Penyelesaian**
-- Tambahkan 1 node NAT, 1 node ubuntu untuk Router bernama Pandudewanta, 2 node Switch, dan 6 node ubuntu yang masing-masing dinamai sesuai dengan soal diatas.
-- Tambahkan 2 node ubuntu lagi yang merupakan client dan masing-masing diberi nama Nakula dan Sadewa, buat juga hubungan antar node nya.
-- Pada masing-masing node ubuntu, setting network dengan konfigurasi sebagai berikut `(Prefix IP: 192.206)`:
-  1. RouterPandudewanta
+- Gunakan image docker `danielcristh0/debian-buster:1.1` untuk membuat project.
+- Tambahkan 1 node NAT, 1 node debian untuk Router (Aura).
+- Tambahkan 4 node debian yang masing-masing adalah DHCP Server (Himmel), DNS Server (Heiter), DB Server (Denken) dan LB (Eisen).
+- Tambahkan 3 node debian sebagai Laravel Worker (Frieren, Flamme, Fern) dan 3 node sebagai PHP Worker (Lawine, Linie, Lugner).
+- Terakhir 4 node debian untuk client (Revolte, Richter, Stark, Sein)
+- Kemudian pada masing-masing node debian, setting network dengan konfigurasi sebagai berikut `(Prefix IP: 192.206)`:
+  1. Aura
   ```
-    auto eth0
-    iface eth0 inet dhcp
-    
-    auto eth1
-    iface eth1 inet static
-    	address 192.206.1.1
-    	netmask 255.255.255.0
-    
-    auto eth2
-    iface eth2 inet static
-    	address 192.206.2.1
-    	netmask 255.255.255.0
-    
-    auto eth3
-    iface eth3 inet static
-    	address 192.206.3.1
-    	netmask 255.255.255.0
+  auto eth0
+  iface eth0 inet dhcp
+  
+  auto eth1
+  iface eth1 inet static
+  	address 192.206.1.0
+  	netmask 255.255.255.0
+  
+  auto eth2
+  iface eth2 inet static
+  	address 192.206.2.0
+  	netmask 255.255.255.0
+  
+  auto eth3
+  iface eth3 inet static
+  	address 192.206.3.0
+  	netmask 255.255.255.0
+  
+  auto eth4 
+  iface eth4 inet static 
+    address 192.206.4.0
+    netmask 255.255.255.0
   ```
-  2. SadewaClient
+  2. Himmel
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.1.1
+  	netmask 255.255.255.0
+  	gateway 192.206.1.0
+  ```
+  3. Heiter
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.1.2
   	netmask 255.255.255.0
-  	gateway 192.206.1.1
+  	gateway 192.206.1.0
   ```
-  3. NakulaClient
+  4. Denken
   ```
   auto eth0
   iface eth0 inet static
-  	address 192.206.1.3
+  	address 192.206.2.1
   	netmask 255.255.255.0
-  	gateway 192.206.1.1
+  	gateway 192.206.2.0
   ```
-  4. YudhistiraDNSMaster
+  5. Eisen
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.2.2
   	netmask 255.255.255.0
-  	gateway 192.206.2.1
+  	gateway 192.206.2.0
   ```
-  5. WerkudaraDNSSlave
+  6. Lugner
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.3.1
+  	netmask 255.255.255.0
+  	gateway 192.206.3.0
+  ```
+  7. Linie
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.3.2
   	netmask 255.255.255.0
-  	gateway 192.206.3.1
+  	gateway 192.206.3.0
   ```
-  6. ArjunaLoadBalancer
+  8. Lawine
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.3.3
   	netmask 255.255.255.0
-  	gateway 192.206.3.1
+  	gateway 192.206.3.0
   ```
-  7. AbimanyuWebServer
+  9. Richter
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.3.4
   	netmask 255.255.255.0
-  	gateway 192.206.3.1
+  	gateway 192.206.3.0
   ```
-  9. PrabukusumaWebServer
+  10. Revolte
   ```
   auto eth0
   iface eth0 inet static
   	address 192.206.3.5
   	netmask 255.255.255.0
-  	gateway 192.206.3.1
+  	gateway 192.206.3.0
   ```
-  10. WisanggeniWebServer
+  11. Fern
   ```
   auto eth0
   iface eth0 inet static
-  	address 192.206.3.6
+  	address 192.206.4.1
   	netmask 255.255.255.0
-  	gateway 192.206.3.1
+  	gateway 192.206.4.0
+  ```
+  12. Flamme
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.4.2
+  	netmask 255.255.255.0
+  	gateway 192.206.4.0
+  ```
+  13. Frieren
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.4.3
+  	netmask 255.255.255.0
+  	gateway 192.206.4.0
+  ```
+  14. Stark
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.4.4
+  	netmask 255.255.255.0
+  	gateway 192.206.4.0
+  ```
+  15. Sein
+  ```
+  auto eth0
+  iface eth0 inet static
+  	address 192.206.4.5
+  	netmask 255.255.255.0
+  	gateway 192.206.4.0
   ```
 - Sehingga topologi dapat terlihat seperti pada gambar berikut.
   
 | <p align="center"> Topologi </p> |
 | -------------------------------------------- |
 | <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-1.png" width = "400"/> |
+- Kemudian lakukan register domain `riegel.canyon.d30.com` untuk worker Laravel dan `granz.channel.d30.com` untuk worker PHP
+- Arahkan domain untuk worker Laravel pada node worker dengan IP `192.206.3.1` dan worker PHP menuju `192.206.4.1`
+- Register domain ini diletakkan pada Heiter sebagai DNS Server dengan membuat script sebagai berikut
 
 ## Nomor 2
 Buatlah website utama pada node arjuna dengan akses ke arjuna.yyy.com dengan alias www.arjuna.yyy.com dengan yyy merupakan kode kelompok.
