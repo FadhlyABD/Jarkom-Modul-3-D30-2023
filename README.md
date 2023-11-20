@@ -109,18 +109,12 @@ Setelah mengalahkan Demon King, perjalanan berlanjut. Kali ini, kalian diminta u
   9. Richter
   ```
   auto eth0
-  iface eth0 inet static
-  	address 192.206.3.4
-  	netmask 255.255.255.0
-  	gateway 192.206.3.0
+  iface eth0 inet dhcp
   ```
   10. Revolte
   ```
   auto eth0
-  iface eth0 inet static
-  	address 192.206.3.5
-  	netmask 255.255.255.0
-  	gateway 192.206.3.0
+  iface eth0 inet dhcp
   ```
   11. Fern
   ```
@@ -149,27 +143,78 @@ Setelah mengalahkan Demon King, perjalanan berlanjut. Kali ini, kalian diminta u
   14. Stark
   ```
   auto eth0
-  iface eth0 inet static
-  	address 192.206.4.4
-  	netmask 255.255.255.0
-  	gateway 192.206.4.0
+  iface eth0 inet dhcp
   ```
   15. Sein
   ```
   auto eth0
-  iface eth0 inet static
-  	address 192.206.4.5
-  	netmask 255.255.255.0
-  	gateway 192.206.4.0
+  iface eth0 inet dhcp
   ```
 - Sehingga topologi dapat terlihat seperti pada gambar berikut.
   
 | <p align="center"> Topologi </p> |
 | -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-1.png" width = "400"/> |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/topologi.jpg" width = "400"/> |
 - Kemudian lakukan register domain `riegel.canyon.d30.com` untuk worker Laravel dan `granz.channel.d30.com` untuk worker PHP
 - Arahkan domain untuk worker Laravel pada node worker dengan IP `192.206.3.1` dan worker PHP menuju `192.206.4.1`
 - Register domain ini diletakkan pada Heiter sebagai DNS Server dengan membuat script sebagai berikut
+```
+echo ‘zone "riegel.canyon.d30.com" {
+        type master;
+        file "/etc/bind/riegel/riegel.canyon.d30.com";
+};’ > /etc/bind/named.conf.local
+
+mkdir /etc/bind/riegel
+
+cp /etc/bind/db.local /etc/bind/riegel/riegel.canyon.d30.com
+
+
+echo”
+;
+; BIND data file for local loopback interface
+;
+\$TTL    604800
+@       IN      SOA    riegel.canyon.d30.com. root.riegel.canyon.d30.com. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      riegel.canyon.d30.com.
+@       IN      A       192.206.4.1; IP worker laravel
+www     IN      CNAME   riegel.canyon.d30.com.
+“  >  /etc/bind/riegel/riegel.canyon.d30.com
+
+
+echo ‘zone "granz.channel.d30.com" {
+        type master;
+        file "/etc/bind/granz/granz.channel.d30.com";
+};’ >> /etc/bind/named.conf.local
+
+
+mkdir /etc/bind/granz
+
+cp /etc/bind/db.local /etc/bind/granz/granz.channel.d30.com
+
+
+echo”
+;
+; BIND data file for local loopback interface
+;
+\$TTL    604800
+@       IN      SOA    granz.channel.d30.com. root.granz.channel.d30.com. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      granz.channel.d30.com.
+@       IN      A       192.206.3.1; IP worker php
+www     IN      CNAME   granz.channel.d30.com.
+“  > /etc/bind/granz/granz.channel.d30.com
+```
 
 ## Nomor 2 & 3 & 4 & 5 
 
