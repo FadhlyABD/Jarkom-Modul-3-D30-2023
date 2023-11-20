@@ -292,11 +292,19 @@ subnet 192.206.4.0 netmask 255.255.255.0{
 
 | |
 | -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-2a.png" width = "400"/> |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/dhcp1.png" width = "400"/> |
 
-|  |
+| |
 | -------------------------------------------- |
-| <img src="https://github.com/FadhlyABD/Jarkom-Modul-2-D30-2023/blob/main/Images/soal-2b.png" width = "400"/> |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/dhcp2.png" width = "400"/> |
+
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/dhcp3.png" width = "400"/> |
+
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/dhcp4.png" width = "400"/> |
 
 
 ## Nomor 6
@@ -326,11 +334,25 @@ apt-get install php
   cp 000-default.conf default-8080.conf
   ```
 - Lalu ubah port pada `/etc/apache2/sites-available/default-8080.conf` yang awalnya `80` menjadi `8080` dan Ubah juga `DocumentRoot` yang awalnya `/var/www/html` menjadi `/var/www/web-8080`
-  (ss)
+
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/php1.png" width = "400"/> |
+
 - lalu Tambahkan `Listen 8080` pada `file /etc/apache2/ports.conf`
-  (ss)
+ 
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/php2.png" width = "400"/> |
+
+
 - lalu buat direktori di `/var/www` dengan nama `web-8080` dan buat file dengan nama `index.php `
-  (ss)
+  
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/php3.png" width = "400"/> |
+
+
 - Lalu aktifkan konfigurasi default-8080.conf dengan perintah
   ```
   a2ensite default-8080.conf
@@ -343,7 +365,12 @@ apt-get install php
   ```
   lynx http://192.206.3.1:8080
   ```
-  (ss)
+ 
+| |
+| -------------------------------------------- |
+| <img src="https://github.com/FadhlyABD/Jarkom-Modul-3-D30-2023/blob/main/Images/php4.png" width = "400"/> |
+
+
 - lakukan langkah langkah di atas di setiap worker di switch 3
   
 ## Nomor 7
