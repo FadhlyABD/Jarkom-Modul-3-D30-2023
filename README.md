@@ -529,6 +529,48 @@ Selanjutnya LB ini hanya boleh diakses oleh client dengan IP [Prefix IP].3.69, [
 ## Nomor 13
 
 Semua data yang diperlukan, diatur pada Denken dan harus dapat diakses oleh Frieren, Flamme, dan Fern.
+
+**Penyelesaian**
+- Sebelumnya pada Denken sebagai Database Server terlebih dahulu install mariadb server.
+```
+apt-get update
+
+apt-get install mariadb-server -y
+```
+- Nyalakan mysql dengan perintah berikut.
+```
+service mysql start
+```
+- Masuk ke dalam mysql dengan perintah `mysql` kemudian lakukan konfigurasi sebagai berikut.
+```
+CREATE USER 'kelompokd30'@'%' IDENTIFIED BY 'passwordd30';
+CREATE USER 'kelompokd30'@'localhost' IDENTIFIED BY 'passwordd30';
+CREATE DATABASE dbkelompokd30;
+GRANT ALL PRIVILEGES ON *.* TO 'kelompokd30'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'kelompokd30'@'localhost';
+FLUSH PRIVILEGES;
+```
+- Setelah selesai keluar dengan perintah `exit` dan masuk menggunakan user yang baru dibuat.
+```
+mysql -u kelompokd30 -p
+```
+- Kemudian isikan password yang telah dibuat (passwordd30).
+- Setelah masuk coba perintah `SHOW DATABASES` untuk mengecek apakah database berhasil dibuat.
+- Karena database akan diakses oleh tiga worker, tambahkan konfigurasi berikut pada `/etc/mysql/my.cnf`, jangan lupa untuk merestart service setelahnya.
+```
+[mysqld]
+skip-networking=0
+skip-bind-address
+```
+- Untuk mengecek apakah database sudah dapat diakses melalui Worker, lakukan instalasi mariadb-client pada ketiga worker (Frieren, Flamme, Fern).
+```
+apt-get install mariadb-client -y
+```
+- Kemudian lakukan koneksi pada database dengan perintah berikut.
+```
+mariadb --host=192.206.2.1 --port=3306 --user=kelompokd30 --password
+```
+
 ## Nomor 14
 
 Frieren, Flamme, dan Fern memiliki Riegel Channel sesuai dengan quest guide berikut. Jangan lupa melakukan instalasi PHP8.0 dan Composer
